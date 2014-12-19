@@ -39,8 +39,6 @@
 # To rebuild project do "make clean" then "make all".
 #----------------------------------------------------------------------------
 
-#UART_LIB_DIR   = ../libs/uartlibrary
-
 # MCU name
 MCU = atmega8
 

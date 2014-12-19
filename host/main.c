@@ -5,9 +5,9 @@
 #include <util/delay.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "rfm12.h"
-#include "../../libs/uartlibrary/uart.h"
 
 #define LED_PORT  PORTB
 #define LED_DDR    DDRB
@@ -15,75 +15,77 @@
 
 #define VD_OFF  LED_PORT |= 1 << LED_BIT;
 #define VD_ON  LED_PORT &= ~(1 << LED_BIT);
+#define VD_TOGGLE LED_PORT ^= 1 << LED_BIT;
 
-#define UART_BAUD_RATE 9600
-#define UART_HEXDUMP
-
+#define BAUD        19200UL
+#define UBRR_BAUD   ((F_CPU/(16UL*BAUD))-1)
 
 void _blink(void)
 {
-	VD_ON;
-	_delay_ms(100);
-	VD_OFF;
-	_delay_ms(100);
+	//VD_ON;
+	//_delay_ms(100);
+	//VD_OFF;
+	//_delay_ms(100);
+	VD_TOGGLE;
 }
 
+void uart_init(void)
+{
+    UBRRH = (uint8_t) (UBRR_BAUD>>8);
+    UBRRL = (uint8_t) (UBRR_BAUD & 0x0ff);
+
+    UCSRB = (1<<RXEN)|(1<<TXEN);
+
+    UCSRC = (1<<URSEL)|(1<<UCSZ1)|(1<<UCSZ0);
+}
+
+void USARTWriteChar(char data)
+{
+   while(!(UCSRA & (1<<UDRE)))
+   {
+      //Do nothing
+   }
+   //Now write the data to USART buffer
+   UDR=data;
+}
 
 int main(void)
 {
-
 		uint8_t *bufptr;
 		uint8_t i;
-	
-		LED_DDR |= _BV(LED_BIT); //enable LED if any
-	
-	
-		//uart_init( UART_BAUD_SELECT(UART_BAUD_RATE,F_CPU) ); 
-	
-		_delay_ms(100);  //little delay for the rfm12 to initialize properly
+		
+		uart_init();	
+			
+		_delay_ms(50);  //little delay for the rfm12 to initialize properly
 		rfm12_init();    //init the RFM12
+		_delay_ms(50);  //little delay for the rfm12 to initialize properly
 
-        
         sei();           //interrupts on
-		
-		//uart_puts ("\r\n" "RFM12 Pingpong test\r\n");
-		
-		//LED_PORT ^= _BV(LED_BIT);
 		
 		_blink();
         
         while (1)
         {
-			//_blink();
 			if (rfm12_rx_status() == STATUS_COMPLETE)
 			{
 				//so we have received a message
-
-				//blink the LED
 				_blink();
 
-				//uart_puts ("new packet: \"");
+				//get the address of the current rx buffer
+				bufptr = rfm12_rx_buffer(); 
 
-				bufptr = rfm12_rx_buffer(); //get the address of the current rx buffer
-
+				USARTWriteChar(0xFF);
 				//dump buffer contents to uart			
 				for (i=0;i<rfm12_rx_len();i++)
 				{
-					//uart_putc ( bufptr[i] );
+					USARTWriteChar(bufptr[i]);
 				}
+				USARTWriteChar(0xFA);
 				
-				//uart_puts ("\"\r\n");
 				
 				// tell the implementation that the buffer
 				// can be reused for the next data.
 				rfm12_rx_clear();
 			}
-
-			//rfm12 needs to be called from your main loop periodically.
-			//it checks if the rf channel is free (no one else transmitting), and then
-			//sends packets, that have been queued by rfm12_tx above.
-			//rfm12_tick();
-			
-			//_delay_us(100); //small delay so loop doesn't run as fast 		
         };
 }

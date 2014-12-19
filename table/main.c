@@ -74,9 +74,9 @@ int main(void)
 	ACSR |= (1 << ACD);     // Disable Analog Comparator
 	wdt_disable();			 // Disable Watchdog Timer
 	
+	
 	sei();          //interrupts on
 	
-
 	_blink();		//ready
 	
 	set_sleep_mode(SLEEP_MODE_IDLE);
