@@ -34,7 +34,7 @@ void _blink(void)
 // ADC interrupt service routine
 ISR(ADC_vect)
 {
-	if (ADCH > 50)
+	if (ADCH >= 45)
 	{
 		uint8_t packet[] = {CHIP_ID, ADCL, ADCH}; //order in which bytes are read is important
 		uint8_t packettype = 0xEE;

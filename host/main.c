@@ -62,6 +62,8 @@ int main(void)
 
         sei();           //interrupts on
 		
+		USARTWriteChar(0xFF);
+		
 		_blink();
         
         while (1)
