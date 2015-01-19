@@ -1,4 +1,4 @@
-﻿namespace listener.Console
+﻿namespace listener.Common.Infrastructure
 {
     public class TablePacket
     {

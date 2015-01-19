@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 
-namespace listener.Console
+namespace listener.Common.Infrastructure
 {
     public abstract class SerialPortPacketReader<TPacket> : IDisposable
         where TPacket: class

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace listener.Console
+namespace listener.Common.Utils
 {
     internal static class ByteArrayExtensions
     {

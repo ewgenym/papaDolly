@@ -1,0 +1,95 @@
+﻿@section scripts
+{
+    <style>
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+
+        .line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 1.5px;
+        }
+    </style>
+
+    <script src="~/Scripts/jquery.signalR-2.2.0.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script src="~/Scripts/d3/d3.js"></script>
+    <script src="~/Scripts/c3/c3.min.js"></script>
+    <link href="~/Scripts/c3/c3.min.css" rel="stylesheet" type="text/css">
+
+    <script type="text/javascript">
+        var maxDataLen = 1000;
+        var chart, lineData = ["host"];
+
+        $(function() {
+            $.connection.hub.start();
+
+            var hub = $.connection.hostHub;
+
+            chart = initChart();
+
+            setInterval(function() {
+                chart.load({
+                    columns: [
+                        lineData
+                    ]
+                });
+            }, 500);
+
+            hub.client.hostValue = function(value) {
+                //console.log(value);
+                if (lineData.length >= maxDataLen) {
+                    lineData.shift();
+                    lineData.shift();
+                    lineData.unshift('host');
+                }
+
+                lineData.push(value);
+            };
+        });
+
+        function initChart() {
+            return c3.generate({
+                bindto: '#chart',
+                data: {
+                    columns: [
+                        lineData
+                    ]
+                },
+                axis: {
+                    y: {
+                        max: 200,
+                        min: 0
+                    },
+                    x: {
+                        tick: {
+                            count: 10,
+                            format: function(x) { return ''; }
+                        }
+                    }
+                },
+                tooltip: {
+                    show: false
+                },
+                transition: {
+                    duration: 0
+                },
+                point: {
+                    show: false
+                }
+            });
+        }
+    </script>
+
+}
+
+<div class="container">
+    <h3 class="page-header">Ping-pong table status (2nd floor)</h3>
+    <div class="row">
+        <div id="chart"></div>
+    </div>
+</div>

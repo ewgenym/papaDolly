@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace listener.Console
+namespace listener.Common.Infrastructure
 {
     public class TableHostPacketReader : SerialPortPacketReader<TablePacket>
     {

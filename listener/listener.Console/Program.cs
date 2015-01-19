@@ -1,8 +1,38 @@
-﻿namespace listener.Console
+﻿using listener.Common.Infrastructure;
+using NetMQ;
+
+namespace listener.Console
 {
     class Program
     {
         private static void Main(string[] args)
+        {
+            //ReadingHost();
+           ListeningQueue();
+        }
+
+        private static void ListeningQueue()
+        {
+            using (NetMQContext context = NetMQContext.Create())
+            {
+                using (var subscriber = context.CreateSubscriberSocket())
+                {
+                    subscriber.Connect("tcp://127.0.0.1:5555");
+
+                    subscriber.Subscribe("");
+
+                    while (true)
+                    {
+                        bool more;
+                        var bytes = subscriber.Receive(out more);
+
+                        System.Console.WriteLine("0x{0:X}; 0x{1:X}", bytes[0], bytes[1]);
+                    }
+                }
+            }
+        }
+
+        private static void ReadingHost()
         {
             using (var reader = new TableHostPacketReader())
             {
@@ -18,7 +48,7 @@
 
         private static void PacketReceivedHandler(object sender, TablePacket e)
         {
-            System.Console.WriteLine("{0}; {1}", e.Adch, e.Adcl);
+            System.Console.WriteLine("0x{0:X}; 0x{1:X}", e.Adch, e.Adcl);
         }
     }
 }
