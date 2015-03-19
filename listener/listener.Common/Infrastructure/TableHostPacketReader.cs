@@ -1,12 +1,15 @@
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 
 namespace listener.Common.Infrastructure
 {
     public class TableHostPacketReader : SerialPortPacketReader<TablePacket>
     {
-        public TableHostPacketReader() 
-            : base("COM9", 1200)
+        const int PacketSize = 3;
+
+        public TableHostPacketReader()
+            : base(ConfigurationManager.AppSettings["port"], 1200)
         {
         }
 
@@ -20,7 +23,7 @@ namespace listener.Common.Infrastructure
                 queue.Dequeue();
             }
 
-            if (queue.Count < 5)
+            if (queue.Count < PacketSize)
             {
                 return default(TablePacket);
             }
@@ -29,14 +32,12 @@ namespace listener.Common.Infrastructure
             Debug.Assert(start == packetStart);
 
             var id = queue.Dequeue();
-            var adcl = queue.Dequeue();
-            var adch = queue.Dequeue();
 
             var stop = queue.Dequeue();
 
             Debug.Assert(stop == packetStop);
 
-            return new TablePacket(id, adcl, adch);
+            return new TablePacket(id);
         }
     }
 }

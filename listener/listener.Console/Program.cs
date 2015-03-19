@@ -7,8 +7,8 @@ namespace listener.Console
     {
         private static void Main(string[] args)
         {
-            //ReadingHost();
-           ListeningQueue();
+            ReadingHost();
+            //ListeningQueue();
         }
 
         private static void ListeningQueue()
@@ -26,7 +26,7 @@ namespace listener.Console
                         bool more;
                         var bytes = subscriber.Receive(out more);
 
-                        System.Console.WriteLine("0x{0:X}; 0x{1:X}", bytes[0], bytes[1]);
+                        System.Console.WriteLine("0x{0:X}", bytes[0]);
                     }
                 }
             }
@@ -48,7 +48,7 @@ namespace listener.Console
 
         private static void PacketReceivedHandler(object sender, TablePacket e)
         {
-            System.Console.WriteLine("0x{0:X}; 0x{1:X}", e.Adch, e.Adcl);
+            System.Console.WriteLine("0x{0:X}", e.Id);
         }
     }
 }

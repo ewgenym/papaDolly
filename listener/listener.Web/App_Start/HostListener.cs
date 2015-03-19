@@ -16,39 +16,49 @@ namespace listener.Web.App_Start
     public static class HostListener
     {
         private static NetMQContext _context;
-        private static SubscriberSocket _subscriber;
+        private static SubscriberSocket _eventSubscriber;
+        private static SubscriberSocket _statusSubscriber;
         private static CancellationTokenSource _cts;
         private static Task _readerTask;
 
         public static void Start()
         {
             _cts = new CancellationTokenSource();
+            _context = NetMQContext.Create();
+
             _readerTask = Task.Factory.StartNew(obj =>
             {
                 var token = (CancellationToken) obj;
-                _context = NetMQContext.Create();
 
-                _subscriber = _context.CreateSubscriberSocket();
+                _eventSubscriber = _context.CreateSubscriberSocket();
+                _eventSubscriber.Connect("tcp://127.0.0.1:5555");
+                _eventSubscriber.Subscribe("");
 
-                _subscriber.Connect("tcp://127.0.0.1:5555");
-                _subscriber.Subscribe("");
+                _statusSubscriber = _context.CreateSubscriberSocket();
+                _statusSubscriber.Connect("tcp://127.0.0.1:5556");
+                _statusSubscriber.Subscribe("");
 
-                while (!token.IsCancellationRequested)
+                while (true)
                 {
-                    if (!_subscriber.HasIn)
+                    token.ThrowIfCancellationRequested();
+
+                    if (_eventSubscriber.HasIn)
                     {
-                        continue;
+                        bool more;
+                        var bytes = _eventSubscriber.Receive(out more);
+
+                        var clients = GlobalHost.ConnectionManager.GetHubContext<HostHub>().Clients;
+                        clients.All.HostValue(bytes[0]);
                     }
 
-                    bool more;
-                    var bytes = _subscriber.Receive(out more);
-
-                    var clients = GlobalHost.ConnectionManager.GetHubContext<HostHub>().Clients;
-                    clients.All.HostValue(bytes[0]);
+                    if (_statusSubscriber.HasIn)
+                    {
+                        var status = _statusSubscriber.ReceiveString();
+                        var clients = GlobalHost.ConnectionManager.GetHubContext<HostHub>().Clients;
+                        clients.All.HostStatus(status);
+                    }
                 }
-
-                throw new OperationCanceledException(token);
-            }, _cts.Token);
+            }, _cts.Token, TaskCreationOptions.LongRunning);
         }
 
         public static void Shutdown()
@@ -56,13 +66,24 @@ namespace listener.Web.App_Start
             if (_cts != null)
             {
                 _cts.Cancel();
-                _readerTask.Wait(_cts.Token);
+                try
+                {
+                    _readerTask.Wait(_cts.Token);
+                }
+                catch (AggregateException)
+                {
+                }
                 _cts.Dispose();
             }
-            
-            if (_subscriber != null)
+
+            if (_statusSubscriber != null)
             {
-                _subscriber.Dispose();
+                _statusSubscriber.Dispose();
+            }
+
+            if (_eventSubscriber != null)
+            {
+                _eventSubscriber.Dispose();
             }
 
             if (_context != null)
