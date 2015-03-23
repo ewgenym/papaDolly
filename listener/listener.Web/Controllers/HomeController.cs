@@ -1,5 +1,5 @@
-﻿using System.Web.Mvc;
-using NetMQ;
+﻿using System.Configuration;
+using System.Web.Mvc;
 
 namespace listener.Web.Controllers
 {
@@ -7,6 +7,7 @@ namespace listener.Web.Controllers
     {
         public ActionResult Index()
         {
+            ViewBag.Endpoint = ConfigurationManager.AppSettings["endpoint"];
             return View();
         }
     }

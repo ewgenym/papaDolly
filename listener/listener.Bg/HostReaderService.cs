@@ -1,42 +1,29 @@
-﻿using System;
-using System.Diagnostics;
-using System.ServiceProcess;
-using System.Threading;
-using System.Threading.Tasks;
-using listener.Common;
+﻿using System.ServiceProcess;
 using listener.Common.Infrastructure;
 using NetMQ;
-using NetMQ.Sockets;
+using NetMQ.WebSockets;
 
 namespace listener.Bg
 {
     public partial class HostReaderService : ServiceBase
     {
-        private EventLog _eventLog;
+        private readonly string _endpoint;
         private TableHostPacketReader _reader;
         private NetMQContext _context;
-        private PublisherSocket _eventPublisher;
-        private PublisherSocket _statusPublisher;
-        private CancellationTokenSource _statusPublisherCancellation;
-        private Task _statusPublisherTask;
-        private TableStatusResolver _statusResolver;
+        private WSPublisher _eventPublisher;
 
-        public HostReaderService()
+        public HostReaderService(string endpoint)
         {
+            _endpoint = endpoint;
             InitializeComponent();
-
-            InitLog();
         }
 
         private void InitMq()
         {
             _context = NetMQContext.Create();
 
-            _eventPublisher = _context.CreatePublisherSocket();
-            _eventPublisher.Bind("tcp://*:5555");
-
-            _statusPublisher = _context.CreatePublisherSocket();
-            _statusPublisher.Bind("tcp://*:5556");
+            _eventPublisher = _context.CreateWSPublisher();
+            _eventPublisher.Bind(_endpoint);
         }
 
         private void RunEventReaderTask()
@@ -47,57 +34,9 @@ namespace listener.Bg
             _reader.Start();
         }
 
-        private void RunStatusPublisherTask()
-        {
-            _statusPublisherCancellation = new CancellationTokenSource();
-            _statusPublisherTask = Task.Factory.StartNew(async () =>
-            {
-                while (true)
-                {
-                    _statusPublisher.Send(_statusResolver.Status);
-                    await Task.Delay(1000, _statusPublisherCancellation.Token);
-                }
-            }, _statusPublisherCancellation.Token,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
-        }
-
-        private void StopStatusPublisherTask()
-        {
-            if (_statusPublisherCancellation != null)
-            {
-                _statusPublisherCancellation.Cancel();
-            }
-
-            if (_statusPublisherTask != null)
-            {
-                try
-                {
-                    _statusPublisherTask.Wait();
-                }
-                catch (AggregateException)
-                {
-                }
-            }
-        }
-
         private void PacketReceivedHandler(object sender, TablePacket e)
         {
-            _eventPublisher.Send(new byte[] {100});
-            _statusResolver.Tick();
-            _eventLog.WriteEntry(string.Format("0x{0:X}", e.Id));
-        }
-
-        private void InitLog()
-        {
-            _eventLog = new EventLog();
-            if (!EventLog.SourceExists("HostReaderSource"))
-            {
-                EventLog.CreateEventSource("HostReaderSource", "HostReaderLog");
-            }
-
-            _eventLog.Source = "HostReaderSource";
-            _eventLog.Log = "HostReaderLog";
+            _eventPublisher.Send("event");
         }
 
         protected override void OnStart(string[] args)
@@ -105,12 +44,6 @@ namespace listener.Bg
             InitMq();
 
             RunEventReaderTask();
-
-            _statusResolver = new TableStatusResolver();
-
-            RunStatusPublisherTask();
-
-            _eventLog.WriteEntry("Started listening.");
         }
 
         protected override void OnStop()
@@ -118,18 +51,6 @@ namespace listener.Bg
             if (_reader != null)
             {
                 _reader.Dispose();
-            }
-
-            StopStatusPublisherTask();
-
-            if (_statusResolver != null)
-            {
-                _statusResolver.Dispose();
-            }
-
-            if (_statusPublisher != null)
-            {
-                _statusPublisher.Dispose();
             }
 
             if (_eventPublisher != null)
@@ -141,8 +62,6 @@ namespace listener.Bg
             {
                 _context.Dispose();
             }
-
-            _eventLog.WriteEntry("Stoped listening.");
         }
     }
 }
