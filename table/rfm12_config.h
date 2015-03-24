@@ -85,7 +85,7 @@
 #define RFM12_RSSI_THRESHOLD  RFM12_RXCTRL_RSSI_79
 
 //Receive Filter Bandwidth
-#define RFM12_FILTER_BW       RFM12_RXCTRL_BW_400
+#define RFM12_FILTER_BW       RFM12_RXCTRL_BW_134
 
 //Output power relative to maximum (0dB is maximum)
 #define RFM12_POWER           RFM12_TXCONF_POWER_0
@@ -99,10 +99,10 @@
 #define RFM12_XTAL_LOAD       RFM12_XTAL_11_5PF
 
 //use this for datarates >= 2700 Baud
-#define DATARATE_VALUE        RFM12_DATARATE_CALC_HIGH(9600.0)
+//#define DATARATE_VALUE        RFM12_DATARATE_CALC_HIGH(9600.0)
 
 //use this for 340 Baud < datarate < 2700 Baud
-//#define DATARATE_VALUE      RFM12_DATARATE_CALC_LOW(1200.0)
+#define DATARATE_VALUE      RFM12_DATARATE_CALC_LOW(1200.0)
 
 //TX BUFFER SIZE
 #define RFM12_TX_BUFFER_SIZE  30
