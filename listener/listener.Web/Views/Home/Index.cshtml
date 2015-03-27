@@ -43,14 +43,6 @@
 
         chart = initChart();
 
-        setInterval(function () {
-            chart.load({
-                columns: [
-                    lineData
-                ]
-            });
-        }, 1000);
-
         var pushChartValue = function (value) {
             if (lineData.length >= maxDataLen) {
                 lineData.shift();
@@ -104,6 +96,11 @@
         //Make the chart move on
         setInterval(function () {
             pushChartValue(0);
+            chart.load({
+                columns: [
+                    lineData
+                ]
+            });
         }, 1000);
     });
 
