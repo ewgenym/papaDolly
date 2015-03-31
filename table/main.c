@@ -35,7 +35,7 @@ ISR (INT0_vect)
 	rfm12_tick();
 	_delay_ms(1);
 
-    //_blink();
+    _blink();
 }
 
 

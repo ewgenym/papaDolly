@@ -18,6 +18,7 @@
  * @author Peter Fuhrmann, Hans-Gert Dahmen, Soeren Heisrath
  */
 
+
 /******************************************************
  *                                                    *
  *           C O N F I G U R A T I O N                *
