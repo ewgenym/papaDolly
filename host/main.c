@@ -54,11 +54,14 @@ int main(void)
 		uint8_t *bufptr;
 		uint8_t i;
 		
+		LED_DDR |= _BV(LED_BIT); //enable LED if any
+		VD_OFF;
+		
 		uart_init();	
 			
-		_delay_ms(50);  //little delay for the rfm12 to initialize properly
+		_delay_ms(100);  //little delay for the rfm12 to initialize properly
 		rfm12_init();    //init the RFM12
-		_delay_ms(50);  //little delay for the rfm12 to initialize properly
+		_delay_ms(250);  //little delay for the rfm12 to initialize properly
 
         sei();           //interrupts on
 		
