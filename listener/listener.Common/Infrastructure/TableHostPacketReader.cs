@@ -9,7 +9,7 @@ namespace listener.Common.Infrastructure
         const int PacketSize = 3;
 
         public TableHostPacketReader()
-            : base(ConfigurationManager.AppSettings["port"], 1200)
+            : base(ConfigurationManager.AppSettings["port"], 19200)
         {
         }
 
