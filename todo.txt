@@ -1,0 +1,32 @@
+Hardware:
+- Reduce power consumption:
+  + sleep mode and wakeup timer in repeater module (already implemented, test)
+  - consider using wakeup timer in table module (how?)
+  - play with sleep modes
+  - turn off unused hardware as much as possible
+  - experiment with SLEEP_MODE_PWR_DOWN
+  - to read:
+    - http://jeelabs.org/2011/06/26/current-measurements/
+    - http://electronics.stackexchange.com/questions/49182/how-can-a-let-my-atmega328-run-for-a-year-on-batteries
+    - http://www.rocketscream.com/blog/2011/07/04/lightweight-low-power-arduino-library/
+    - http://www.homautomation.org/2014/04/03/best-ways-to-power-a-arduino-according-to-your-need/
+    - http://donalmorrissey.blogspot.fr/2010/04/putting-arduino-diecimila-to-sleep-part.html
+- Speed everything up. Loosing a lot of packages now:
+  - Use external crystal (http://treehouseprojects.ca/fusebits/)
+  - Turn off collision avoidance on table module
+  - Increase birate (?)
+    (
+      #define RFM12_FILTER_BW RFM12_RXCTRL_BW_400, 
+      #define DATARATE_VALUE        RFM12_DATARATE_CALC_HIGH(9600.0)
+    )
+- implement low battery detection on table and repeater modules (red light)
+- turn off debug leds (after testing)
+- PCB
+- Body
+- OPTIONAL! USB programmator
+- POSPONED! Hardware status indicator
+- POSPONED! Consider moving to RFM69W(HW). There is no lib for this module.
+
+Listener:
+- Experimenting with event sourcing
+- Add support for sevral tables

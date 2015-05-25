@@ -36,7 +36,10 @@ namespace listener.Bg
 
         private void PacketReceivedHandler(object sender, TablePacket e)
         {
-            _eventPublisher.Send("event");
+            //if (e.Id == 0xA) //only messages from repeater
+            {
+                _eventPublisher.Send("event");
+            }
         }
 
         protected override void OnStart(string[] args)
